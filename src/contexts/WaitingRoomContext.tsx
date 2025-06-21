@@ -31,25 +31,43 @@ export const WaitingRoomProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [callHistory, setCallHistory] = useState<WaitingRoomCall[]>([]);
 
   const playNotificationSound = () => {
-    // Create audio context for notification sound
+    // Create audio context for enhanced notification sound
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     
-    // Create a simple notification tone
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    // Create a more pleasant and longer notification sequence
+    const playTone = (frequency: number, startTime: number, duration: number, volume: number = 0.3) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+      oscillator.type = 'sine'; // Smoother sine wave
+      
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.1);
+      gainNode.gain.linearRampToValueAtTime(volume * 0.8, startTime + duration - 0.2);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
+
+    const currentTime = audioContext.currentTime;
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // Play a pleasant 3-tone chime sequence (longer duration)
+    playTone(523.25, currentTime, 0.8, 0.4); // C5
+    playTone(659.25, currentTime + 0.3, 0.8, 0.4); // E5
+    playTone(783.99, currentTime + 0.6, 1.2, 0.4); // G5
     
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
+    // Add a second sequence for emphasis
+    setTimeout(() => {
+      const secondTime = audioContext.currentTime;
+      playTone(523.25, secondTime, 0.6, 0.3);
+      playTone(659.25, secondTime + 0.2, 0.6, 0.3);
+      playTone(783.99, secondTime + 0.4, 0.8, 0.3);
+    }, 2000);
   };
 
   const callNextPatient = (patient: Patient, doctor: Doctor, cabinetNumber: string) => {
@@ -65,10 +83,10 @@ export const WaitingRoomProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setCallHistory(prev => [newCall, ...prev.slice(0, 4)]); // Keep last 5 calls
     playNotificationSound();
 
-    // Auto-clear current call after 30 seconds
+    // Auto-clear current call after 45 seconds (increased from 30)
     setTimeout(() => {
       setCurrentCall(null);
-    }, 30000);
+    }, 45000);
   };
 
   return (
