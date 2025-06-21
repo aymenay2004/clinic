@@ -1,18 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Patient, Doctor } from '../types';
-
-interface WaitingRoomCall {
-  id: string;
-  patient: Patient;
-  doctor: Doctor;
-  cabinetNumber: string;
-  timestamp: Date;
-}
+import { Patient, Doctor, WaitingRoomCall, WaitingRoomSettings } from '../types';
 
 interface WaitingRoomContextType {
   currentCall: WaitingRoomCall | null;
   callHistory: WaitingRoomCall[];
+  settings: WaitingRoomSettings;
   callNextPatient: (patient: Patient, doctor: Doctor, cabinetNumber: string) => void;
+  updateSettings: (settings: Partial<WaitingRoomSettings>) => void;
   playNotificationSound: () => void;
 }
 
@@ -29,8 +23,18 @@ export const useWaitingRoom = () => {
 export const WaitingRoomProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentCall, setCurrentCall] = useState<WaitingRoomCall | null>(null);
   const [callHistory, setCallHistory] = useState<WaitingRoomCall[]>([]);
+  const [settings, setSettings] = useState<WaitingRoomSettings>({
+    displayMode: 'first_name_only',
+    autoRefreshInterval: 5,
+    soundEnabled: true,
+    animationEnabled: true,
+    showQueueNumber: false,
+    showEstimatedTime: false
+  });
 
   const playNotificationSound = () => {
+    if (!settings.soundEnabled) return;
+
     // Create audio context for enhanced notification sound
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     
@@ -56,18 +60,26 @@ export const WaitingRoomProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const currentTime = audioContext.currentTime;
     
-    // Play a pleasant 3-tone chime sequence (longer duration)
-    playTone(523.25, currentTime, 0.8, 0.4); // C5
-    playTone(659.25, currentTime + 0.3, 0.8, 0.4); // E5
-    playTone(783.99, currentTime + 0.6, 1.2, 0.4); // G5
+    // Play a pleasant 4-tone chime sequence (longer duration - 6 seconds total)
+    playTone(523.25, currentTime, 1.0, 0.4); // C5
+    playTone(659.25, currentTime + 0.4, 1.0, 0.4); // E5
+    playTone(783.99, currentTime + 0.8, 1.2, 0.4); // G5
+    playTone(1046.50, currentTime + 1.2, 1.0, 0.3); // C6
     
-    // Add a second sequence for emphasis
+    // Add a second sequence for emphasis (after 2.5 seconds)
     setTimeout(() => {
       const secondTime = audioContext.currentTime;
-      playTone(523.25, secondTime, 0.6, 0.3);
-      playTone(659.25, secondTime + 0.2, 0.6, 0.3);
-      playTone(783.99, secondTime + 0.4, 0.8, 0.3);
-    }, 2000);
+      playTone(523.25, secondTime, 0.8, 0.3);
+      playTone(659.25, secondTime + 0.3, 0.8, 0.3);
+      playTone(783.99, secondTime + 0.6, 1.0, 0.3);
+    }, 2500);
+
+    // Add a final gentle reminder tone (after 5 seconds)
+    setTimeout(() => {
+      const thirdTime = audioContext.currentTime;
+      playTone(659.25, thirdTime, 0.6, 0.2);
+      playTone(783.99, thirdTime + 0.3, 0.8, 0.2);
+    }, 5000);
   };
 
   const callNextPatient = (patient: Patient, doctor: Doctor, cabinetNumber: string) => {
@@ -76,24 +88,40 @@ export const WaitingRoomProvider: React.FC<{ children: React.ReactNode }> = ({ c
       patient,
       doctor,
       cabinetNumber,
-      timestamp: new Date()
+      timestamp: new Date(),
+      isAnonymized: settings.displayMode === 'anonymous'
     };
 
     setCurrentCall(newCall);
-    setCallHistory(prev => [newCall, ...prev.slice(0, 4)]); // Keep last 5 calls
+    setCallHistory(prev => [newCall, ...prev.slice(0, 9)]); // Keep last 10 calls
     playNotificationSound();
 
-    // Auto-clear current call after 45 seconds (increased from 30)
+    // Auto-clear current call after 60 seconds (increased for better visibility)
     setTimeout(() => {
       setCurrentCall(null);
-    }, 45000);
+    }, 60000);
   };
+
+  const updateSettings = (newSettings: Partial<WaitingRoomSettings>) => {
+    setSettings(prev => ({ ...prev, ...newSettings }));
+    localStorage.setItem('waitingRoomSettings', JSON.stringify({ ...settings, ...newSettings }));
+  };
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('waitingRoomSettings');
+    if (savedSettings) {
+      setSettings(JSON.parse(savedSettings));
+    }
+  }, []);
 
   return (
     <WaitingRoomContext.Provider value={{
       currentCall,
       callHistory,
+      settings,
       callNextPatient,
+      updateSettings,
       playNotificationSound
     }}>
       {children}

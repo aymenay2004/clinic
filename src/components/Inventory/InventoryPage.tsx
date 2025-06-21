@@ -8,51 +8,120 @@ import {
   TrendingDown,
   TrendingUp,
   Calendar,
-  Barcode
+  Barcode,
+  Filter,
+  Download,
+  Scan,
+  Bell
 } from 'lucide-react';
-import { Medicine } from '../../types';
+import { Medicine, StockAlert } from '../../types';
 
 const InventoryPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'low' | 'expired' | 'normal'>('all');
+  const [filterCategory, setFilterCategory] = useState<'all' | 'antibiotic' | 'painkiller' | 'anesthetic' | 'antiseptic' | 'supplement' | 'equipment'>('all');
 
-  // Mock data
+  // Mock data with Algerian Dinars
   const mockMedicines: Medicine[] = [
     {
       id: '1',
-      name: 'Anesthésique Local',
+      name: 'Anesthésique Local (Lidocaïne 2%)',
       barcode: '1234567890123',
       quantity: 5,
       unit: 'ampoules',
       expiryDate: new Date('2024-06-15'),
-      provider: 'Pharma Dental',
-      price: 45.50,
+      provider: 'Pharma Dental Algérie',
+      price: 1250.00, // DA
+      minStockLevel: 10,
+      category: 'anesthetic',
+      description: 'Anesthésique local pour interventions dentaires',
+      sideEffects: ['Réaction allergique rare', 'Engourdissement temporaire'],
+      dosageInstructions: '1-2 ml selon la zone à anesthésier',
       createdAt: new Date('2023-01-15'),
       updatedAt: new Date('2024-01-15')
     },
     {
       id: '2',
-      name: 'Composite Dentaire',
+      name: 'Composite Dentaire Universel',
       barcode: '2345678901234',
       quantity: 25,
       unit: 'seringues',
       expiryDate: new Date('2025-03-20'),
-      provider: 'DentMat',
-      price: 89.00,
+      provider: 'DentMat Algérie',
+      price: 2890.00, // DA
+      minStockLevel: 15,
+      category: 'equipment',
+      description: 'Composite photopolymérisable pour restaurations',
       createdAt: new Date('2023-02-10'),
       updatedAt: new Date('2024-01-10')
     },
     {
       id: '3',
-      name: 'Désinfectant',
+      name: 'Désinfectant Surfaces',
       barcode: '3456789012345',
       quantity: 2,
       unit: 'litres',
       expiryDate: new Date('2024-02-28'),
-      provider: 'MediClean',
-      price: 25.75,
+      provider: 'MediClean Algérie',
+      price: 850.75, // DA
+      minStockLevel: 5,
+      category: 'antiseptic',
+      description: 'Désinfectant pour surfaces et instruments',
       createdAt: new Date('2023-03-05'),
       updatedAt: new Date('2024-01-05')
+    },
+    {
+      id: '4',
+      name: 'Amoxicilline 500mg',
+      barcode: '4567890123456',
+      quantity: 50,
+      unit: 'comprimés',
+      expiryDate: new Date('2025-08-15'),
+      provider: 'Antibio Pharma',
+      price: 45.50, // DA per tablet
+      minStockLevel: 30,
+      category: 'antibiotic',
+      description: 'Antibiotique à large spectre',
+      sideEffects: ['Troubles digestifs', 'Réactions allergiques'],
+      dosageInstructions: '500mg 3 fois par jour pendant 7 jours',
+      createdAt: new Date('2023-04-01'),
+      updatedAt: new Date('2024-01-01')
+    },
+    {
+      id: '5',
+      name: 'Ibuprofène 400mg',
+      barcode: '5678901234567',
+      quantity: 8,
+      unit: 'boîtes',
+      expiryDate: new Date('2024-12-31'),
+      provider: 'Pain Relief Co.',
+      price: 320.00, // DA per box
+      minStockLevel: 15,
+      category: 'painkiller',
+      description: 'Anti-inflammatoire non stéroïdien',
+      sideEffects: ['Troubles gastriques', 'Maux de tête'],
+      dosageInstructions: '400mg toutes les 6-8 heures si nécessaire',
+      createdAt: new Date('2023-05-10'),
+      updatedAt: new Date('2024-01-10')
+    }
+  ];
+
+  const mockAlerts: StockAlert[] = [
+    {
+      id: '1',
+      medicine: mockMedicines[0],
+      type: 'low_stock',
+      message: 'Stock critique: Anesthésique Local (5 restants)',
+      isRead: false,
+      createdAt: new Date()
+    },
+    {
+      id: '2',
+      medicine: mockMedicines[2],
+      type: 'expiry_warning',
+      message: 'Expire bientôt: Désinfectant Surfaces (28 jours)',
+      isRead: false,
+      createdAt: new Date()
     }
   ];
 
@@ -62,7 +131,7 @@ const InventoryPage: React.FC = () => {
     
     if (daysUntilExpiry < 0) return 'expired';
     if (daysUntilExpiry < 30) return 'expiring';
-    if (medicine.quantity < 10) return 'low';
+    if (medicine.quantity <= medicine.minStockLevel) return 'low';
     return 'normal';
   };
 
@@ -86,10 +155,23 @@ const InventoryPage: React.FC = () => {
     }
   };
 
+  const getCategoryText = (category: string) => {
+    switch (category) {
+      case 'antibiotic': return 'Antibiotique';
+      case 'painkiller': return 'Antidouleur';
+      case 'anesthetic': return 'Anesthésique';
+      case 'antiseptic': return 'Antiseptique';
+      case 'supplement': return 'Complément';
+      case 'equipment': return 'Équipement';
+      default: return category;
+    }
+  };
+
   const filteredMedicines = mockMedicines.filter(medicine => {
     const matchesSearch = 
       medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      medicine.barcode.includes(searchTerm);
+      medicine.barcode.includes(searchTerm) ||
+      medicine.provider.toLowerCase().includes(searchTerm.toLowerCase());
 
     const status = getStockStatus(medicine);
     const matchesFilter = 
@@ -98,7 +180,10 @@ const InventoryPage: React.FC = () => {
       (filterStatus === 'expired' && (status === 'expired' || status === 'expiring')) ||
       (filterStatus === 'normal' && status === 'normal');
 
-    return matchesSearch && matchesFilter;
+    const matchesCategory = 
+      filterCategory === 'all' || medicine.category === filterCategory;
+
+    return matchesSearch && matchesFilter && matchesCategory;
   });
 
   const stats = [
@@ -122,7 +207,7 @@ const InventoryPage: React.FC = () => {
     },
     {
       title: 'Valeur Totale',
-      value: `${mockMedicines.reduce((sum, m) => sum + (m.price * m.quantity), 0).toLocaleString()} MAD`,
+      value: `${mockMedicines.reduce((sum, m) => sum + (m.price * m.quantity), 0).toLocaleString()} DA`,
       icon: TrendingUp,
       color: 'green'
     }
@@ -141,11 +226,45 @@ const InventoryPage: React.FC = () => {
             Gérez le stock de médicaments et fournitures
           </p>
         </div>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-          <Plus className="w-5 h-5" />
-          <span>Ajouter Article</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
+            <Scan className="w-5 h-5" />
+            <span>Scanner</span>
+          </button>
+          <button className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2">
+            <Download className="w-5 h-5" />
+            <span>Exporter</span>
+          </button>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+            <Plus className="w-5 h-5" />
+            <span>Ajouter Article</span>
+          </button>
+        </div>
       </motion.div>
+
+      {/* Alerts */}
+      {mockAlerts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4"
+        >
+          <div className="flex items-center space-x-2 mb-3">
+            <Bell className="w-5 h-5 text-red-600 dark:text-red-400" />
+            <h3 className="font-semibold text-red-800 dark:text-red-300">Alertes Stock</h3>
+          </div>
+          <div className="space-y-2">
+            {mockAlerts.map(alert => (
+              <div key={alert.id} className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg p-3">
+                <span className="text-sm text-gray-900 dark:text-gray-100">{alert.message}</span>
+                <button className="text-red-600 hover:text-red-700 text-sm font-medium">
+                  Marquer comme lu
+                </button>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -177,28 +296,47 @@ const InventoryPage: React.FC = () => {
         transition={{ delay: 0.2 }}
         className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
       >
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 mb-6">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Rechercher par nom ou code-barres..."
+              placeholder="Rechercher par nom, code-barres ou fournisseur..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
           
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-          >
-            <option value="all">Tous les articles</option>
-            <option value="normal">Stock normal</option>
-            <option value="low">Stock faible</option>
-            <option value="expired">Expirations</option>
-          </select>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Filter className="w-5 h-5 text-gray-400" />
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as any)}
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="all">Tous les statuts</option>
+                <option value="normal">Stock normal</option>
+                <option value="low">Stock faible</option>
+                <option value="expired">Expirations</option>
+              </select>
+            </div>
+            
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value as any)}
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            >
+              <option value="all">Toutes catégories</option>
+              <option value="antibiotic">Antibiotiques</option>
+              <option value="painkiller">Antidouleurs</option>
+              <option value="anesthetic">Anesthésiques</option>
+              <option value="antiseptic">Antiseptiques</option>
+              <option value="supplement">Compléments</option>
+              <option value="equipment">Équipements</option>
+            </select>
+          </div>
         </div>
 
         {/* Inventory Table */}
@@ -208,8 +346,10 @@ const InventoryPage: React.FC = () => {
               <tr className="border-b border-gray-200 dark:border-gray-700">
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Article</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Code-barres</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Catégorie</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Stock</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Prix</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Prix Unitaire</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Valeur Totale</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Expiration</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Statut</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Actions</th>
@@ -218,6 +358,7 @@ const InventoryPage: React.FC = () => {
             <tbody>
               {filteredMedicines.map((medicine, index) => {
                 const status = getStockStatus(medicine);
+                const totalValue = medicine.price * medicine.quantity;
                 return (
                   <motion.tr
                     key={medicine.id}
@@ -230,6 +371,9 @@ const InventoryPage: React.FC = () => {
                       <div>
                         <p className="font-medium text-gray-900 dark:text-gray-100">{medicine.name}</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">{medicine.provider}</p>
+                        {medicine.description && (
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{medicine.description}</p>
+                        )}
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -239,13 +383,26 @@ const InventoryPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-gray-900 dark:text-gray-100 font-medium">
-                        {medicine.quantity} {medicine.unit}
+                      <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded-full text-xs font-medium">
+                        {getCategoryText(medicine.category)}
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-gray-900 dark:text-gray-100">
-                        {medicine.price.toFixed(2)} MAD
+                      <div>
+                        <span className={`font-medium ${medicine.quantity <= medicine.minStockLevel ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}`}>
+                          {medicine.quantity} {medicine.unit}
+                        </span>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">Min: {medicine.minStockLevel}</p>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-gray-900 dark:text-gray-100 font-medium">
+                        {medicine.price.toLocaleString()} DA
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-gray-900 dark:text-gray-100 font-medium">
+                        {totalValue.toLocaleString()} DA
                       </span>
                     </td>
                     <td className="py-4 px-4">
@@ -263,11 +420,14 @@ const InventoryPage: React.FC = () => {
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center space-x-2">
-                        <button className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded">
+                        <button className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded" title="Ajouter stock">
                           <Plus className="w-4 h-4" />
                         </button>
-                        <button className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded">
+                        <button className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded" title="Retirer stock">
                           <TrendingDown className="w-4 h-4" />
+                        </button>
+                        <button className="p-1 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 rounded" title="Scanner">
+                          <Scan className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
