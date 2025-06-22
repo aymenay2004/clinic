@@ -1,23 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Pill,
-  Calendar,
-  User,
-  Stethoscope,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Eye,
-  Edit,
-  Print,
-  Download,
-  FileText
-} from 'lucide-react';
+import { Plus, Search, Filter, Pill, Calendar, User, Stethoscope, Clock, AlertTriangle, CheckCircle, XCircle, Eye, Edit, Printer as Print, Download, FileText } from 'lucide-react';
 import { Prescription, PrescribedMedicine } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 

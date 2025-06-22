@@ -1,22 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Eye, 
-  Edit, 
-  FileText,
-  Calendar,
-  User,
-  Stethoscope,
-  Heart,
-  Activity,
-  AlertTriangle,
-  Download,
-  Print,
-  Share2
-} from 'lucide-react';
+import { Plus, Search, Filter, Eye, Edit, FileText, Calendar, User, Stethoscope, Heart, Activity, AlertTriangle, Download, Printer as Print, Share2 } from 'lucide-react';
 import { MedicalFile, Patient, Doctor } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 
