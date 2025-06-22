@@ -12,6 +12,10 @@ import AppointmentList from './components/Appointments/AppointmentList';
 import WaitingRoomDisplay from './components/WaitingRoom/WaitingRoomDisplay';
 import StatisticsPage from './components/Statistics/StatisticsPage';
 import InventoryPage from './components/Inventory/InventoryPage';
+import MedicalFilesList from './components/MedicalFiles/MedicalFilesList';
+import ConsultationHistoryPage from './components/ConsultationHistory/ConsultationHistoryPage';
+import PrescriptionsPage from './components/Prescriptions/PrescriptionsPage';
+import LabResultsPage from './components/LabResults/LabResultsPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -91,10 +95,17 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute>
               <Layout>
-                <div className="p-6">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Dossiers Médicaux</h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
-                </div>
+                <MedicalFilesList />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/consultation-history"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ConsultationHistoryPage />
               </Layout>
             </ProtectedRoute>
           }
@@ -104,10 +115,7 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute>
               <Layout>
-                <div className="p-6">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Prescriptions</h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
-                </div>
+                <PrescriptionsPage />
               </Layout>
             </ProtectedRoute>
           }
@@ -117,10 +125,7 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute>
               <Layout>
-                <div className="p-6">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Résultats de Laboratoire</h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
-                </div>
+                <LabResultsPage />
               </Layout>
             </ProtectedRoute>
           }
@@ -132,6 +137,19 @@ const AppRoutes: React.FC = () => {
               <Layout>
                 <div className="p-6">
                   <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Radiologie</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/case-images"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Images de Cas</h1>
                   <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
                 </div>
               </Layout>
@@ -152,6 +170,32 @@ const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/my-payments"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Mes Paiements</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/medication-scanner"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Scanner Médicaments</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/staff"
           element={
             <ProtectedRoute>
@@ -165,12 +209,103 @@ const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/roles-permissions"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Rôles & Permissions</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/room-management"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Gestion des Cabinets</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-schedule"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Mon Planning</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patient-feedback"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Évaluations Patients</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/messages"
           element={
             <ProtectedRoute>
               <Layout>
                 <div className="p-6">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Messages</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Messages Internes</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Notifications</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/call-log"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Journal d'Appels</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/call-center"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Centre d'Appels</h1>
                   <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
                 </div>
               </Layout>
@@ -184,6 +319,58 @@ const AppRoutes: React.FC = () => {
               <Layout>
                 <div className="p-6">
                   <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Paramètres</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/system-backup"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Sauvegarde Système</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sync"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Synchronisation</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-profile"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Mon Profil</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
+                </div>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Changer Mot de Passe</h1>
                   <p className="text-gray-600 dark:text-gray-400 mt-2">Section en cours de développement...</p>
                 </div>
               </Layout>
